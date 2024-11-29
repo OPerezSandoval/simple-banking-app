@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema({
     required: [true, "Please enter your password"],
     minlength: 6,
   },
+  balance: {
+    type: Number,
+    default: 0, // Default balance is 0
+  },
 });
 
 // Hash the password before saving
