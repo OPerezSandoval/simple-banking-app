@@ -1,76 +1,57 @@
-import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Dashboard() {
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState(500);
   const [amount, setAmount] = useState('');
-  const { authToken, setAuthToken } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!authToken) {
-      navigate('/');
-    } else {
-      fetchBalance();
-    }
-  }, [authToken, navigate]);
-
-  const fetchBalance = async () => {
-    try {
-      const res = await axios.get('/api/users/balance', {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      setBalance(res.data.balance);
-    } catch (err) {
-      console.error(err.response.data);
-      alert('Failed to fetch balance.');
-    }
-  };
-
-  const handleDeposit = async (e) => {
+  const handleDeposit = (e) => {
     e.preventDefault();
-    try {
-      const res = await axios.post(
-        '/api/users/deposit',
-        { amount: parseFloat(amount) },
-        { headers: { Authorization: `Bearer ${authToken}` } }
-      );
-      setBalance(res.data.balance);
-      setAmount('');
-      alert(`Successfully deposited $${amount}`);
-    } catch (err) {
-      console.error(err.response.data);
-      alert(err.response.data.message || 'Deposit failed.');
-    }
+    const newBalance = balance + parseFloat(amount || 0);
+    setBalance(newBalance);
+    setAmount('');
+    alert(`Successfully deposited $${amount}`);
   };
 
   const handleLogout = () => {
-    setAuthToken(null);
-    localStorage.removeItem('tokens');
-    navigate('/');
+    // Clear user data (if stored in localStorage/sessionStorage)
+    localStorage.removeItem('user'); // Adjust as needed for your auth logic
+    alert('You have been logged out!');
+    navigate('/'); // Redirect to login page
   };
 
   return (
-    <div>
-      <h2>Dashboard</h2>
-      <p>Your Balance: ${balance}</p>
-      <form onSubmit={handleDeposit}>
+    <div className="text-center text-white">
+      <h2 className="text-3xl font-bold mb-6">Dashboard</h2>
+      <p className="text-xl mb-6">
+        Your Balance: <span className="font-bold">${balance.toFixed(2)}</span>
+      </p>
+      <form onSubmit={handleDeposit} className="space-y-4">
         <input
           type="number"
           step="0.01"
-          placeholder="Deposit Amount"
+          placeholder="Enter amount"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
+          className="w-full max-w-sm mx-auto px-4 py-3 border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-green-500"
           required
         />
-        <button type="submit">Deposit</button>
+        <button
+          type="submit"
+          className="w-full max-w-sm mx-auto bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition"
+        >
+          Deposit
+        </button>
       </form>
-      <button onClick={handleLogout}>Logout</button>
+      <button
+        onClick={handleLogout}
+        className="mt-6 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
+      >
+        Logout
+      </button>
     </div>
   );
 }
 
 export default Dashboard;
-
